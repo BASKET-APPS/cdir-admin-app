@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import {memberOperations} from './browser-member-operations.mjs';
 const contract=JSON.parse(await fs.readFile(new URL('../src/generated/sql-connect-contract.json',import.meta.url),'utf8'));
 const gate=`access: members(where:{uid:{eq_expr:"auth.uid"},active:{eq:true},role:{eq:"ADMIN"}},limit:1) @check(expr:"this.size() == 1",message:"CDIR_ADMIN_REQUIRED") @redact {id}`;
 const staffGate=`access: members(where:{uid:{eq_expr:"auth.uid"},active:{eq:true}},limit:1) @check(expr:"this.size() == 1",message:"CDIR_ACCESS_REQUIRED") @redact {id}`;
@@ -15,7 +16,7 @@ query BrowserIdentity @auth(level:USER_EMAIL_VERIFIED){
  staffFunctions(where:{coach:{email:{eq_expr:"auth.token.email"}},active:{eq:true}},limit:20){${fields('staffFunctions')}}
  profiles(where:{uid:{eq_expr:"auth.uid"}},limit:1){id uid googlePhotoUrl avatarSource avatarVersion updatedAt googleSyncedAt}
 }
-query BrowserAdminPage($seasonId:UUID!,$offset:Int!) @auth(level:USER_EMAIL_VERIFIED){${gate}\n${page}}
+query BrowserAdminPage($seasonId:UUID!,$offset:Int!) @auth(level:USER_EMAIL_VERIFIED){${gate}\nworkspaceRevision(key:{id:"club"}){version}\n${page}}
 query BrowserPublicFeed($offset:Int!) @auth(level:PUBLIC){
  events(where:{status:{eq:"PUBLISHED"}},offset:$offset,limit:200){id title slug kind description location startsAt endsAt price registrationOpen imageUrl}
  matches(where:{published:{eq:true}},offset:$offset,limit:200){id seasonId teamId startsAt endsAt opponent venue location competition status scoreFor scoreAgainst isExample published}
@@ -60,6 +61,7 @@ for(const admin of [false,true])gql+=`query Browser${admin?'Admin':'Public'}PdfP
  document:magazineDocuments(where:{magazineId:{eq:$id}},limit:1) @check(expr:${JSON.stringify("this.size() == 1 && this[0].payload.contains('\"uploadId\":\"' + string(vars.uploadId) + '\"')")},message:"CDIR_PDF_MISMATCH") @redact {payload}
  magazinePdfParts(where:{uploadId:{eq:$uploadId}},orderBy:{ordinal:ASC},offset:$offset,limit:2){ordinal payload}
 }\n`;
+gql+=memberOperations(gate);
 await fs.mkdir(new URL('../dataconnect/browser/',import.meta.url),{recursive:true});
 await fs.writeFile(new URL('../dataconnect/browser/connector.yaml',import.meta.url),'connectorId: "cdir-browser"\n');
 await fs.writeFile(new URL('../dataconnect/browser/operations.gql',import.meta.url),gql);
