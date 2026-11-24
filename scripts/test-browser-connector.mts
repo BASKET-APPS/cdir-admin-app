@@ -1,0 +1,22 @@
+import fs from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {sqlConnect} from '../src/server/sql-connect-store';
+import type {Member} from '../src/domain/types';
+const dc=sqlConnect(),gql=await fs.readFile('dataconnect/browser/operations.gql','utf8');
+const operations=Object.fromEntries(gql.split(/(?=\bquery Browser)/).filter(x=>x.startsWith('query ')).map(q=>[q.match(/^query (\w+)/)![1],q]));
+const d=(await dc.executeGraphqlRead<{members:Member[];seasons:{id:string;current:boolean}[]},undefined>('query Probe @auth(level:NO_ACCESS){ members(where:{active:{eq:true}},limit:50){id uid name email role teamIds active} seasons(limit:10){id current} }')).data;
+const admin=d.members.find(x=>x.role==='ADMIN')!,coach=d.members.find(x=>x.role==='COACH')!,season=d.seasons.find(x=>x.current)!;
+const claims=(m:Member)=>({sub:m.uid,email:m.email,email_verified:true,firebase:{sign_in_provider:'google.com',identities:{}}});
+const variables={seasonId:season.id,offset:0};
+const accepted=await dc.executeGraphqlRead<Record<string,unknown>,typeof variables>(operations.BrowserAdminPage,{variables,impersonate:{authClaims:claims(admin)}});
+assert((accepted.data.players as unknown[]).length>0);console.log('PASS: existing admin can read real workspace through database role gate.');
+for(const [label,impersonate] of [['anonymous',{unauthenticated:true}],['unknown',{authClaims:{sub:'cdir-security-probe-unregistered',email:'nobody@example.invalid',email_verified:true,firebase:{sign_in_provider:'google.com',identities:{}}}}],['coach',{authClaims:claims(coach)}],['unverified admin',{authClaims:{...claims(admin),email_verified:false}}]] as const){let denied=false;try{await dc.executeGraphqlRead(operations.BrowserAdminPage,{variables,impersonate});}catch(e){const m=String(e);denied=/CDIR_ADMIN_REQUIRED|permission|auth|UNAUTHENTICATED|PERMISSION_DENIED/i.test(m);if(!denied)throw e;}assert(denied,label+' must be blocked');console.log('PASS: '+label+' cannot read admin data.');}
+const publicData=(await dc.executeGraphqlRead<Record<string,unknown[]>,{offset:number}>(operations.BrowserPublicFeed,{variables:{offset:0},impersonate:{unauthenticated:true}})).data;
+assert(!('players' in publicData)&&!('guardians' in publicData)&&!('members' in publicData));console.log('PASS: public feed contains only published public collections.');
+console.log(JSON.stringify({publicRows:Object.fromEntries(Object.entries(publicData).map(([k,v])=>[k,v.length])),writes:0}));
+const identity=(await dc.executeGraphqlRead<{coachTeams:{teamId:string;seasonId:string}[]},undefined>(operations.BrowserIdentity,{impersonate:{authClaims:claims(coach)}})).data;
+const own=identity.coachTeams.find(t=>t.seasonId===season.id)!;
+await dc.executeGraphqlRead(operations.BrowserCoachPage,{variables:{seasonId:season.id,teamId:own.teamId,offset:0},impersonate:{authClaims:claims(coach)}});console.log('PASS: coach can read assigned team.');
+const foreign=(accepted.data.teams as {id:string}[]).find(t=>!identity.coachTeams.some(c=>c.teamId===t.id))!;
+let blocked=false;try{await dc.executeGraphqlRead(operations.BrowserCoachPage,{variables:{seasonId:season.id,teamId:foreign.id,offset:0},impersonate:{authClaims:claims(coach)}});}catch(e){if(!String(e).includes('CDIR_TEAM_REQUIRED'))throw e;blocked=true;}assert(blocked);console.log('PASS: changing teamId cannot read a foreign team.');
+let partBlocked=false;try{await dc.executeGraphqlRead(operations.BrowserPublicPdfParts,{variables:{id:(publicData.magazines[0] as unknown as {id:string}).id,uploadId:'00000000-0000-4000-8000-000000000000',offset:0},impersonate:{unauthenticated:true}});}catch(e){if(!String(e).includes('CDIR_PDF_MISMATCH'))throw e;partBlocked=true;}assert(partBlocked);console.log('PASS: public PDF cannot be used to fetch another document upload.');

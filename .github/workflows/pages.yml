@@ -1,4 +1,4 @@
-name: Deploy administration demo to GitHub Pages
+name: Deploy administration connected to Firebase
 on:
   push:
     branches: [main]
@@ -19,13 +19,14 @@ jobs:
           cache: npm
       - uses: actions/configure-pages@v5
       - run: npm ci
-      - name: Build isolated showcase with synthetic data
-        run: node --import tsx scripts/build-pages-demo.mts
+      - name: Build Firebase-connected administration
+        run: node --import tsx scripts/build-pages-live.mts
         env:
           NODE_OPTIONS: --max-old-space-size=1536
+          FIREBASE_WEB_CONFIG: ${{ vars.FIREBASE_WEB_CONFIG }}
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .pages-demo/out
+          path: .pages-live/out
   deploy:
     needs: build
     runs-on: ubuntu-latest

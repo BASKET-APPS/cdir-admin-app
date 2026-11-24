@@ -9,4 +9,4 @@ schema:
       cloudSql:
         instanceId: "cdir-apps-instance"
       schemaValidation: "COMPATIBLE"
-connectorDirs: ["./admin"]
+connectorDirs: ["./admin", "./browser"]

@@ -1,0 +1,95 @@
+# Browser connector: checked in the database, never based on a client-selected role.
+query BrowserIdentity @auth(level:USER_EMAIL_VERIFIED){
+ access: members(where:{uid:{eq_expr:"auth.uid"},active:{eq:true}},limit:1) @check(expr:"this.size() == 1",message:"CDIR_ACCESS_REQUIRED") @redact {id}
+ members(where:{uid:{eq_expr:"auth.uid"},active:{eq:true}},limit:1){id uid name email role teamIds active}
+ seasons(limit:20){id name startsAt endsAt status current}
+ coaches(where:{email:{eq_expr:"auth.token.email"}},limit:10){id name email phone qualification}
+ coachTeams(where:{coach:{email:{eq_expr:"auth.token.email"}},function:{ne:"FORMER"}},limit:100){id coachId teamId seasonId function}
+ staffFunctions(where:{coach:{email:{eq_expr:"auth.token.email"}},active:{eq:true}},limit:20){id coachId kind active}
+ profiles(where:{uid:{eq_expr:"auth.uid"}},limit:1){id uid googlePhotoUrl avatarSource avatarVersion updatedAt googleSyncedAt}
+}
+query BrowserAdminPage($seasonId:UUID!,$offset:Int!) @auth(level:USER_EMAIL_VERIFIED){access: members(where:{uid:{eq_expr:"auth.uid"},active:{eq:true},role:{eq:"ADMIN"}},limit:1) @check(expr:"this.size() == 1",message:"CDIR_ADMIN_REQUIRED") @redact {id}
+staffFunctions:staffFunctions(offset:$offset,limit:300,orderBy:{id:ASC}){id coachId kind active}
+supportSessions:supportSessions(where:{seasonId:{eq:$seasonId}},offset:$offset,limit:300,orderBy:{id:ASC}){id seasonId coachId teamId venueId kind title startsAt endsAt status}
+supportParticipants:supportParticipants(offset:$offset,limit:300,orderBy:{id:ASC}){id sessionId playerSeasonId mode active}
+supportAttendance:supportAttendanceRows(offset:$offset,limit:300,orderBy:{id:ASC}){id sessionId playerSeasonId status}
+seasons:seasons(offset:$offset,limit:300,orderBy:{id:ASC}){id name startsAt endsAt status current}
+teams:teams(where:{seasonId:{eq:$seasonId}},offset:$offset,limit:300,orderBy:{id:ASC}){id seasonId name category modality branch active}
+players:players(offset:$offset,limit:300,orderBy:{id:ASC}){id name birthDate email phone active}
+guardians:guardians(offset:$offset,limit:300,orderBy:{id:ASC}){id name email phone}
+playerSeasons:playerSeasons(where:{seasonId:{eq:$seasonId}},offset:$offset,limit:300,orderBy:{id:ASC}){id playerId seasonId teamId licenseTeamId number status}
+guardianLinks:guardianLinks(where:{seasonId:{eq:$seasonId}},offset:$offset,limit:300,orderBy:{id:ASC}){id playerId guardianId seasonId relationship legal pickup}
+coaches:coaches(offset:$offset,limit:300,orderBy:{id:ASC}){id name email phone qualification}
+coachTeams:coachTeams(where:{seasonId:{eq:$seasonId}},offset:$offset,limit:300,orderBy:{id:ASC}){id coachId teamId seasonId function}
+venues:venues(offset:$offset,limit:300,orderBy:{id:ASC}){id name address space active}
+sessions:sessions(where:{seasonId:{eq:$seasonId}},offset:$offset,limit:300,orderBy:{id:ASC}){id seasonId teamId venueId startsAt endsAt kind status}
+crossTrainings:crossTrainings(where:{seasonId:{eq:$seasonId}},offset:$offset,limit:300,orderBy:{id:ASC}){id seasonId playerSeasonId destinationSessionId sourceSessionId reason}
+attendance:attendanceRows(offset:$offset,limit:300,orderBy:{id:ASC}){id sessionId playerSeasonId status}
+forms:forms(offset:$offset,limit:300,orderBy:{id:ASC}){id name version fields active}
+events:events(where:{seasonId:{eq:$seasonId}},offset:$offset,limit:300,orderBy:{id:ASC}){id seasonId title slug kind description location startsAt endsAt capacity price status registrationOpen formId imageUrl}
+applications:applications(where:{seasonId:{eq:$seasonId}},offset:$offset,limit:300,orderBy:{id:ASC}){id seasonId eventId name birthDate email phone status createdAt requestKey privacyVersion privacyAccepted imageConsent answers}
+invoices:invoices(where:{seasonId:{eq:$seasonId}},offset:$offset,limit:300,orderBy:{id:ASC}){id seasonId playerSeasonId concept amount dueDate status paidAt}
+contents:contents(offset:$offset,limit:300,orderBy:{id:ASC}){id kind title body url status seasonId}
+members:members(offset:$offset,limit:300,orderBy:{id:ASC}){id uid name email role teamIds active}
+audit:auditRows(offset:$offset,limit:300,orderBy:{id:ASC}){id at actor actorUid action detail}
+categories:categories(offset:$offset,limit:300,orderBy:{id:ASC}){id name sortOrder minAge maxAge scoringEnabled notes}
+teamDetails:teamDetailsRows(offset:$offset,limit:300,orderBy:{id:ASC}){id teamId categoryId yearGroup groupCode division isExample}
+playerDetails:playerDetailsRows(offset:$offset,limit:300,orderBy:{id:ASC}){id playerId joinedAt leftAt reviewedAt selfResponsible photoUrl position source isExample erasedAt}
+matches:matches(where:{seasonId:{eq:$seasonId}},offset:$offset,limit:300,orderBy:{id:ASC}){id seasonId teamId startsAt endsAt opponent venue location competition status scoreFor scoreAgainst published isExample}
+playerRequests:playerRequests(where:{seasonId:{eq:$seasonId}},offset:$offset,limit:300,orderBy:{id:ASC}){id seasonId teamId requestedBy kind sessionId matchId neededAt quantity reason status recurring createdAt resolvedAt decisionNote proposedPlayerIds}
+requestPlayers:requestPlayers(offset:$offset,limit:300,orderBy:{id:ASC}){id requestId playerSeasonId}
+notifications:notifications(offset:$offset,limit:300,orderBy:{id:ASC}){id recipientUid adminOnly teamId title body href createdAt readBy dedupeKey}
+magazines:magazines(offset:$offset,limit:300,orderBy:{id:ASC}){id title description pdfPath publishedAt published isExample}
+clubActivities:clubActivities(offset:$offset,limit:300,orderBy:{id:ASC}){id title description startsAt location imageUrl published isExample}
+coachDetails:coachDetailsRows(offset:$offset,limit:300,orderBy:{id:ASC}){id coachId photoUrl isExample}}
+query BrowserPublicFeed($offset:Int!) @auth(level:PUBLIC){
+ events(where:{status:{eq:"PUBLISHED"}},offset:$offset,limit:200){id title slug kind description location startsAt endsAt price registrationOpen imageUrl}
+ matches(where:{published:{eq:true}},offset:$offset,limit:200){id seasonId teamId startsAt endsAt opponent venue location competition status scoreFor scoreAgainst isExample published}
+ teams(offset:$offset,limit:200){id name}
+ seasons(offset:$offset,limit:200){id name}
+ magazines(where:{published:{eq:true}},offset:$offset,limit:200){id title description pdfPath publishedAt isExample published}
+ clubActivities(where:{published:{eq:true}},offset:$offset,limit:200){id title description startsAt location imageUrl isExample published}
+}
+query BrowserPublicPdf($id:UUID!) @auth(level:PUBLIC){
+ magazine(key:{id:$id}) @check(expr:"this != null && this.published",message:"CDIR_NOT_PUBLISHED") {published pdfPath}
+ magazineDocuments(where:{magazineId:{eq:$id}},limit:1){payload size}
+ magazineCovers(where:{magazineId:{eq:$id}},limit:1){payload etag}
+}
+query BrowserAdminPdf($id:UUID!) @auth(level:USER_EMAIL_VERIFIED){access: members(where:{uid:{eq_expr:"auth.uid"},active:{eq:true},role:{eq:"ADMIN"}},limit:1) @check(expr:"this.size() == 1",message:"CDIR_ADMIN_REQUIRED") @redact {id}
+ magazine(key:{id:$id}){published pdfPath}
+ magazineDocuments(where:{magazineId:{eq:$id}},limit:1){payload size}
+ magazineCovers(where:{magazineId:{eq:$id}},limit:1){payload etag}
+}
+query BrowserCoachPage($seasonId:UUID!,$teamId:UUID!,$offset:Int!) @auth(level:USER_EMAIL_VERIFIED){
+ access: members(where:{uid:{eq_expr:"auth.uid"},active:{eq:true},role:{eq:"COACH"}},limit:1) @check(expr:"this.size() == 1",message:"CDIR_ACCESS_REQUIRED") @redact {id}
+ sporting:staffFunctions(where:{coach:{email:{eq_expr:"auth.token.email"}},kind:{eq:"COACH"},active:{eq:true}},limit:1) @check(expr:"this.size() == 1",message:"CDIR_SPORTS_REQUIRED") @redact {id}
+ assigned:coachTeams(where:{teamId:{eq:$teamId},seasonId:{eq:$seasonId},coach:{email:{eq_expr:"auth.token.email"}},function:{ne:"FORMER"}},limit:1) @check(expr:"this.size() == 1",message:"CDIR_TEAM_REQUIRED") @redact {id}
+ teams(where:{id:{eq:$teamId}},limit:1){id seasonId name category modality branch active}
+ seasons(limit:20){id name startsAt endsAt status current} categories(limit:30){id name sortOrder minAge maxAge scoringEnabled notes} venues(limit:100){id name address space active}
+ teamDetails:teamDetailsRows(where:{teamId:{eq:$teamId}},limit:1){id teamId categoryId yearGroup groupCode division isExample}
+ playerSeasons(where:{teamId:{eq:$teamId},seasonId:{eq:$seasonId}},offset:$offset,limit:300){id playerId seasonId teamId licenseTeamId number status player{id name birthDate active}}
+ coachTeams(where:{teamId:{eq:$teamId},seasonId:{eq:$seasonId}},limit:10){id coachId teamId seasonId function coach{id name qualification}}
+ sessions(where:{teamId:{eq:$teamId},seasonId:{eq:$seasonId}},offset:$offset,limit:300){id seasonId teamId venueId startsAt endsAt kind status}
+ matches(where:{teamId:{eq:$teamId},seasonId:{eq:$seasonId}},offset:$offset,limit:300){id seasonId teamId startsAt endsAt opponent venue location competition status scoreFor scoreAgainst published isExample}
+ attendance:attendanceRows(where:{session:{teamId:{eq:$teamId},seasonId:{eq:$seasonId}}},offset:$offset,limit:300){id sessionId playerSeasonId status}
+ playerRequests(where:{teamId:{eq:$teamId},seasonId:{eq:$seasonId}},offset:$offset,limit:300){id seasonId teamId requestedBy kind sessionId matchId neededAt quantity reason status recurring createdAt resolvedAt decisionNote proposedPlayerIds}
+ requestPlayers(where:{request:{teamId:{eq:$teamId},seasonId:{eq:$seasonId}}},offset:$offset,limit:300){id requestId playerSeasonId}
+}
+query BrowserPublicCover($id:UUID!) @auth(level:PUBLIC){
+ magazine(key:{id:$id}) @check(expr:"this != null && this.published",message:"CDIR_NOT_PUBLISHED") @redact {published}
+ magazineCovers(where:{magazineId:{eq:$id}},limit:1){payload}
+}
+query BrowserAdminCover($id:UUID!) @auth(level:USER_EMAIL_VERIFIED){
+ access: members(where:{uid:{eq_expr:"auth.uid"},active:{eq:true},role:{eq:"ADMIN"}},limit:1) @check(expr:"this.size() == 1",message:"CDIR_ADMIN_REQUIRED") @redact {id}
+ magazineCovers(where:{magazineId:{eq:$id}},limit:1){payload}
+}
+query BrowserPublicPdfParts($id:UUID!,$uploadId:UUID!,$offset:Int!) @auth(level:PUBLIC){
+ magazine(key:{id:$id}) @check(expr:"this != null && this.published",message:"CDIR_NOT_PUBLISHED") @redact {published}
+ document:magazineDocuments(where:{magazineId:{eq:$id}},limit:1) @check(expr:"this.size() == 1 && this[0].payload.contains('\"uploadId\":\"' + string(vars.uploadId) + '\"')",message:"CDIR_PDF_MISMATCH") @redact {payload}
+ magazinePdfParts(where:{uploadId:{eq:$uploadId}},orderBy:{ordinal:ASC},offset:$offset,limit:2){ordinal payload}
+}
+query BrowserAdminPdfParts($id:UUID!,$uploadId:UUID!,$offset:Int!) @auth(level:USER_EMAIL_VERIFIED){
+ access: members(where:{uid:{eq_expr:"auth.uid"},active:{eq:true},role:{eq:"ADMIN"}},limit:1) @check(expr:"this.size() == 1",message:"CDIR_ADMIN_REQUIRED") @redact {id}
+ document:magazineDocuments(where:{magazineId:{eq:$id}},limit:1) @check(expr:"this.size() == 1 && this[0].payload.contains('\"uploadId\":\"' + string(vars.uploadId) + '\"')",message:"CDIR_PDF_MISMATCH") @redact {payload}
+ magazinePdfParts(where:{uploadId:{eq:$uploadId}},orderBy:{ordinal:ASC},offset:$offset,limit:2){ordinal payload}
+}
