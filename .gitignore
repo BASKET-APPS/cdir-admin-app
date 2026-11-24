@@ -14,3 +14,5 @@ gha-creds-*.json
 dataconnect/.dataconnect/
 
 .next-club-test/
+
+.pages-demo/
