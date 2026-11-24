@@ -19,6 +19,7 @@ function adapt(dir:string){for(const e of readdirSync(dir,{withFileTypes:true}))
  if(e.name==='client-auth.ts')t="export const firebaseReady=false; export async function authHeaders():Promise<Record<string,string>>{return {}}; export async function logout(){}; export async function googleLogin():Promise<{displayName:string}>{throw Error('Esta demo no utiliza cuentas reales.')}";
  if(e.name==='workspace.tsx'){t=t.replace('Entorno local','Demostración').replace('Entorno local','Demostración').replace('se guardan en este equipo','se guardan únicamente en este navegador');t=t.replace("return <div className={'app-shell", "return <div className={'app-shell");}
  if(e.name==='club-sections.tsx')t=t.replace("apiOrigin='' publicUrl=","apiOrigin='' assetBase='/cdir-admin-app' publicUrl=");
+ if(e.name==='magazine-library.tsx')t=t.replaceAll("assetBase+'/cdir-admin-app/pdfjs/","assetBase+'/pdfjs/");
  writeFileSync(p,t);
 }}
 adapt(join(dest,'src'));
