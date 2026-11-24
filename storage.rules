@@ -1,0 +1,8 @@
+rules_version = '2';
+service firebase.storage {
+ match /b/{bucket}/o {
+  // All private file access goes through the authenticated Next.js backend.
+  // Admin SDK uses IAM, not these client-side rules.
+  match /{allPaths=**} { allow read, write: if false; }
+ }
+}

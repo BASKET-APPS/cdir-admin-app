@@ -1,0 +1,555 @@
+{
+  "staffFunctions": {
+    "type": "StaffFunctionRow",
+    "table": "staff_functions",
+    "singular": "staffFunctionRow",
+    "plural": "staffFunctions",
+    "fields": {
+      "id": "UUID!",
+      "coachId": "UUID!",
+      "kind": "String!",
+      "active": "Boolean!"
+    }
+  },
+  "supportSessions": {
+    "type": "SupportSession",
+    "table": "support_sessions",
+    "singular": "supportSession",
+    "plural": "supportSessions",
+    "fields": {
+      "id": "UUID!",
+      "seasonId": "UUID!",
+      "coachId": "UUID!",
+      "teamId": "UUID",
+      "venueId": "UUID!",
+      "kind": "String!",
+      "title": "String!",
+      "startsAt": "Timestamp!",
+      "endsAt": "Timestamp!",
+      "status": "String!"
+    }
+  },
+  "supportParticipants": {
+    "type": "SupportParticipant",
+    "table": "support_participants",
+    "singular": "supportParticipant",
+    "plural": "supportParticipants",
+    "fields": {
+      "id": "UUID!",
+      "sessionId": "UUID!",
+      "playerSeasonId": "UUID!",
+      "mode": "String!",
+      "active": "Boolean!"
+    }
+  },
+  "supportAttendance": {
+    "type": "SupportAttendance",
+    "table": "support_attendance",
+    "singular": "supportAttendance",
+    "plural": "supportAttendanceRows",
+    "fields": {
+      "id": "UUID!",
+      "sessionId": "UUID!",
+      "playerSeasonId": "UUID!",
+      "status": "String!"
+    }
+  },
+  "seasons": {
+    "type": "Season",
+    "table": "seasons",
+    "singular": "season",
+    "plural": "seasons",
+    "fields": {
+      "id": "UUID!",
+      "name": "String!",
+      "startsAt": "Date!",
+      "endsAt": "Date!",
+      "status": "String!",
+      "current": "Boolean!"
+    }
+  },
+  "teams": {
+    "type": "Team",
+    "table": "teams",
+    "singular": "team",
+    "plural": "teams",
+    "fields": {
+      "id": "UUID!",
+      "seasonId": "UUID!",
+      "name": "String!",
+      "category": "String!",
+      "modality": "String!",
+      "branch": "String!",
+      "active": "Boolean!"
+    }
+  },
+  "players": {
+    "type": "Player",
+    "table": "players",
+    "singular": "player",
+    "plural": "players",
+    "fields": {
+      "id": "UUID!",
+      "name": "String!",
+      "birthDate": "Date",
+      "email": "String!",
+      "phone": "String!",
+      "active": "Boolean!"
+    }
+  },
+  "guardians": {
+    "type": "Guardian",
+    "table": "guardians",
+    "singular": "guardian",
+    "plural": "guardians",
+    "fields": {
+      "id": "UUID!",
+      "name": "String!",
+      "email": "String!",
+      "phone": "String!"
+    }
+  },
+  "playerSeasons": {
+    "type": "PlayerSeason",
+    "table": "player_seasons",
+    "singular": "playerSeason",
+    "plural": "playerSeasons",
+    "fields": {
+      "id": "UUID!",
+      "playerId": "UUID!",
+      "seasonId": "UUID!",
+      "teamId": "UUID",
+      "licenseTeamId": "UUID",
+      "number": "Int",
+      "status": "String!"
+    }
+  },
+  "guardianLinks": {
+    "type": "GuardianLink",
+    "table": "guardian_links",
+    "singular": "guardianLink",
+    "plural": "guardianLinks",
+    "fields": {
+      "id": "UUID!",
+      "playerId": "UUID!",
+      "guardianId": "UUID!",
+      "seasonId": "UUID!",
+      "relationship": "String!",
+      "legal": "Boolean!",
+      "pickup": "Boolean!"
+    }
+  },
+  "coaches": {
+    "type": "Coach",
+    "table": "coaches",
+    "singular": "coach",
+    "plural": "coaches",
+    "fields": {
+      "id": "UUID!",
+      "name": "String!",
+      "email": "String!",
+      "phone": "String!",
+      "qualification": "String!"
+    }
+  },
+  "coachTeams": {
+    "type": "CoachTeam",
+    "table": "coach_teams",
+    "singular": "coachTeam",
+    "plural": "coachTeams",
+    "fields": {
+      "id": "UUID!",
+      "coachId": "UUID!",
+      "teamId": "UUID!",
+      "seasonId": "UUID!",
+      "function": "String!"
+    }
+  },
+  "venues": {
+    "type": "Venue",
+    "table": "venues",
+    "singular": "venue",
+    "plural": "venues",
+    "fields": {
+      "id": "UUID!",
+      "name": "String!",
+      "address": "String!",
+      "space": "String!",
+      "active": "Boolean"
+    }
+  },
+  "sessions": {
+    "type": "Session",
+    "table": "sessions",
+    "singular": "session",
+    "plural": "sessions",
+    "fields": {
+      "id": "UUID!",
+      "seasonId": "UUID!",
+      "teamId": "UUID!",
+      "venueId": "UUID!",
+      "startsAt": "Timestamp!",
+      "endsAt": "Timestamp!",
+      "kind": "String!",
+      "status": "String!"
+    }
+  },
+  "crossTrainings": {
+    "type": "CrossTraining",
+    "table": "cross_trainings",
+    "singular": "crossTraining",
+    "plural": "crossTrainings",
+    "fields": {
+      "id": "UUID!",
+      "seasonId": "UUID!",
+      "playerSeasonId": "UUID!",
+      "destinationSessionId": "UUID!",
+      "sourceSessionId": "UUID",
+      "reason": "String!"
+    }
+  },
+  "attendance": {
+    "type": "Attendance",
+    "table": "attendance",
+    "singular": "attendance",
+    "plural": "attendanceRows",
+    "fields": {
+      "id": "UUID!",
+      "sessionId": "UUID!",
+      "playerSeasonId": "UUID!",
+      "status": "String!"
+    }
+  },
+  "forms": {
+    "type": "FormTemplate",
+    "table": "forms",
+    "singular": "formTemplate",
+    "plural": "forms",
+    "fields": {
+      "id": "UUID!",
+      "name": "String!",
+      "version": "Int!",
+      "fields": "Any!",
+      "active": "Boolean!"
+    }
+  },
+  "events": {
+    "type": "ClubEvent",
+    "table": "events",
+    "singular": "clubEvent",
+    "plural": "events",
+    "fields": {
+      "id": "UUID!",
+      "seasonId": "UUID!",
+      "title": "String!",
+      "slug": "String!",
+      "kind": "String!",
+      "description": "String!",
+      "location": "String!",
+      "startsAt": "Timestamp!",
+      "endsAt": "Timestamp!",
+      "capacity": "Int!",
+      "price": "Float!",
+      "status": "String!",
+      "registrationOpen": "Boolean!",
+      "formId": "UUID",
+      "imageUrl": "String!"
+    }
+  },
+  "applications": {
+    "type": "Application",
+    "table": "applications",
+    "singular": "application",
+    "plural": "applications",
+    "fields": {
+      "id": "UUID!",
+      "seasonId": "UUID!",
+      "eventId": "UUID!",
+      "name": "String!",
+      "birthDate": "Date!",
+      "email": "String!",
+      "phone": "String!",
+      "status": "String!",
+      "createdAt": "Timestamp!",
+      "requestKey": "UUID!",
+      "privacyVersion": "String!",
+      "privacyAccepted": "Boolean!",
+      "imageConsent": "Boolean!",
+      "answers": "Any!"
+    }
+  },
+  "invoices": {
+    "type": "Invoice",
+    "table": "invoices",
+    "singular": "invoice",
+    "plural": "invoices",
+    "fields": {
+      "id": "UUID!",
+      "seasonId": "UUID!",
+      "playerSeasonId": "UUID!",
+      "concept": "String!",
+      "amount": "Float!",
+      "dueDate": "Date!",
+      "status": "String!",
+      "paidAt": "Timestamp"
+    }
+  },
+  "bankAccounts": {
+    "type": "BankAccount",
+    "table": "bank_accounts",
+    "singular": "bankAccount",
+    "plural": "bankAccounts",
+    "fields": {
+      "id": "UUID!",
+      "playerSeasonId": "UUID!",
+      "holder": "String!",
+      "holderDocument": "String!",
+      "ibanEncrypted": "String!",
+      "last4": "String!",
+      "mandateReference": "String!",
+      "mandateDate": "Date!"
+    }
+  },
+  "contents": {
+    "type": "Content",
+    "table": "contents",
+    "singular": "content",
+    "plural": "contents",
+    "fields": {
+      "id": "UUID!",
+      "kind": "String!",
+      "title": "String!",
+      "body": "String!",
+      "url": "String!",
+      "status": "String!",
+      "seasonId": "UUID"
+    }
+  },
+  "members": {
+    "type": "Member",
+    "table": "members",
+    "singular": "member",
+    "plural": "members",
+    "fields": {
+      "id": "UUID!",
+      "uid": "String!",
+      "name": "String!",
+      "email": "String!",
+      "role": "String!",
+      "teamIds": "[UUID!]!",
+      "active": "Boolean!"
+    }
+  },
+  "audit": {
+    "type": "Audit",
+    "table": "audit_logs",
+    "singular": "audit",
+    "plural": "auditRows",
+    "fields": {
+      "id": "UUID!",
+      "at": "Timestamp!",
+      "actor": "String!",
+      "actorUid": "String!",
+      "action": "String!",
+      "detail": "String!"
+    }
+  },
+  "files": {
+    "type": "ClubFile",
+    "table": "files",
+    "singular": "clubFile",
+    "plural": "files",
+    "fields": {
+      "id": "UUID!",
+      "ownerPlayerId": "UUID!",
+      "name": "String!",
+      "mime": "String!",
+      "size": "Int!",
+      "storagePath": "String!",
+      "createdAt": "Timestamp!"
+    }
+  },
+  "profiles": {
+    "type": "UserProfile",
+    "table": "user_profiles",
+    "singular": "userProfile",
+    "plural": "profiles",
+    "fields": {
+      "id": "UUID!",
+      "uid": "String!",
+      "googlePhotoUrl": "String",
+      "avatarPath": "String",
+      "avatarVersion": "UUID",
+      "avatarSource": "String!",
+      "googleSyncedAt": "Timestamp",
+      "updatedAt": "Timestamp!"
+    }
+  },
+  "categories": {
+    "type": "Category",
+    "table": "categories",
+    "singular": "category",
+    "plural": "categories",
+    "fields": {
+      "id": "UUID!",
+      "name": "String!",
+      "sortOrder": "Int!",
+      "minAge": "Int!",
+      "maxAge": "Int",
+      "scoringEnabled": "Boolean!",
+      "notes": "String!"
+    }
+  },
+  "teamDetails": {
+    "type": "TeamDetails",
+    "table": "team_details",
+    "singular": "teamDetails",
+    "plural": "teamDetailsRows",
+    "fields": {
+      "id": "UUID!",
+      "teamId": "UUID!",
+      "categoryId": "UUID!",
+      "yearGroup": "Int!",
+      "groupCode": "String!",
+      "division": "String!",
+      "isExample": "Boolean!"
+    }
+  },
+  "playerDetails": {
+    "type": "PlayerDetails",
+    "table": "player_details",
+    "singular": "playerDetails",
+    "plural": "playerDetailsRows",
+    "fields": {
+      "id": "UUID!",
+      "playerId": "UUID!",
+      "joinedAt": "Date",
+      "leftAt": "Date",
+      "reviewedAt": "Timestamp",
+      "selfResponsible": "Boolean!",
+      "photoUrl": "String!",
+      "position": "String!",
+      "source": "String!",
+      "isExample": "Boolean!",
+      "erasedAt": "Timestamp"
+    }
+  },
+  "matches": {
+    "type": "Match",
+    "table": "matches",
+    "singular": "match",
+    "plural": "matches",
+    "fields": {
+      "id": "UUID!",
+      "seasonId": "UUID!",
+      "teamId": "UUID!",
+      "startsAt": "Timestamp!",
+      "endsAt": "Timestamp!",
+      "opponent": "String!",
+      "venue": "String!",
+      "location": "String!",
+      "competition": "String!",
+      "status": "String!",
+      "scoreFor": "Int",
+      "scoreAgainst": "Int",
+      "published": "Boolean!",
+      "isExample": "Boolean!"
+    }
+  },
+  "playerRequests": {
+    "type": "PlayerRequest",
+    "table": "player_requests",
+    "singular": "playerRequest",
+    "plural": "playerRequests",
+    "fields": {
+      "id": "UUID!",
+      "seasonId": "UUID!",
+      "teamId": "UUID!",
+      "requestedBy": "String!",
+      "kind": "String!",
+      "sessionId": "UUID",
+      "matchId": "UUID",
+      "neededAt": "Timestamp!",
+      "quantity": "Int!",
+      "reason": "String!",
+      "status": "String!",
+      "recurring": "Boolean!",
+      "createdAt": "Timestamp!",
+      "resolvedAt": "Timestamp",
+      "decisionNote": "String!",
+      "proposedPlayerIds": "[UUID!]"
+    }
+  },
+  "requestPlayers": {
+    "type": "RequestPlayer",
+    "table": "request_players",
+    "singular": "requestPlayer",
+    "plural": "requestPlayers",
+    "fields": {
+      "id": "UUID!",
+      "requestId": "UUID!",
+      "playerSeasonId": "UUID!"
+    }
+  },
+  "notifications": {
+    "type": "Notification",
+    "table": "notifications",
+    "singular": "notification",
+    "plural": "notifications",
+    "fields": {
+      "id": "UUID!",
+      "recipientUid": "String",
+      "adminOnly": "Boolean!",
+      "teamId": "UUID",
+      "title": "String!",
+      "body": "String!",
+      "href": "String!",
+      "createdAt": "Timestamp!",
+      "readBy": "[String!]!",
+      "dedupeKey": "String!"
+    }
+  },
+  "magazines": {
+    "type": "Magazine",
+    "table": "magazines",
+    "singular": "magazine",
+    "plural": "magazines",
+    "fields": {
+      "id": "UUID!",
+      "title": "String!",
+      "description": "String!",
+      "pdfPath": "String!",
+      "publishedAt": "Timestamp",
+      "published": "Boolean!",
+      "isExample": "Boolean!"
+    }
+  },
+  "clubActivities": {
+    "type": "ClubActivity",
+    "table": "club_activities",
+    "singular": "clubActivity",
+    "plural": "clubActivities",
+    "fields": {
+      "id": "UUID!",
+      "title": "String!",
+      "description": "String!",
+      "startsAt": "Timestamp!",
+      "location": "String!",
+      "imageUrl": "String!",
+      "published": "Boolean!",
+      "isExample": "Boolean!"
+    }
+  },
+  "coachDetails": {
+    "type": "CoachDetails",
+    "table": "coach_details",
+    "singular": "coachDetails",
+    "plural": "coachDetailsRows",
+    "fields": {
+      "id": "UUID!",
+      "coachId": "UUID!",
+      "photoUrl": "String!",
+      "isExample": "Boolean!"
+    }
+  }
+}

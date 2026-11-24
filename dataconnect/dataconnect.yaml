@@ -1,0 +1,12 @@
+specVersion: "v1"
+serviceId: "cdir-apps-2-service"
+location: "europe-southwest1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "cdir-apps-2-database"
+      cloudSql:
+        instanceId: "cdir-apps-instance"
+      schemaValidation: "COMPATIBLE"
+connectorDirs: ["./admin"]

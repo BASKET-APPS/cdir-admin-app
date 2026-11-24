@@ -1,0 +1,6 @@
+'use client';
+import {useState} from 'react';
+import {Search,ExternalLink} from 'lucide-react';
+import {madridClubs,searchRivalClubs} from '@/domain/club-catalog';
+import RivalCrest from './rival-crest';
+export default function RivalDirectory({query=''}:{query?:string}){const [search,setSearch]=useState('');const rows=searchRivalClubs([query,search].filter(Boolean).join(' '));return <section className='rival-directory'><div className='info-banner'>Catálogo de {madridClubs.length} clubes importados del Excel. Son entidades, no sus plantillas por categoría. Es una selección de Madrid, no un censo completo.</div><label className='rival-directory-search'><Search size={19}/><input aria-label='Buscar club de Madrid' placeholder='Buscar por nombre del club…' value={search} onChange={e=>setSearch(e.target.value)}/></label><p className='muted'>{rows.length} clubes</p><div className='rival-directory-grid'>{rows.map(c=><article key={c.id}><RivalCrest club={c}/><h3>{c.name}</h3><span>{c.logoPath?'Escudo disponible':'Escudo pendiente'}</span><small>Referencia: {c.referenceSeason}</small><a href={c.sourceUrl} target='_blank' rel='noopener noreferrer'>Fuente indicada en el Excel<ExternalLink size={13}/></a></article>)}</div>{!rows.length?<p>No hay clubes con ese nombre.</p>:null}</section>;}

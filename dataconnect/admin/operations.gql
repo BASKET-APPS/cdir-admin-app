@@ -1,0 +1,1 @@
+query AdminConnectionCheck @auth(level: NO_ACCESS) { workspaceRevision(key: {id: "club"}) { id version } }

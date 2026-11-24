@@ -1,0 +1,125 @@
+{
+ "scale": "growth",
+ "results": [
+  {
+   "op": "GET workspace · administración",
+   "status": 200,
+   "reads": 15,
+   "mutations": 1,
+   "dbBytesOut": 3951862,
+   "dbBytesIn": 15265,
+   "responseBytes": 3660759,
+   "ms": 2196,
+   "backendMs": 312,
+   "heapDeltaKB": 130986
+  },
+  {
+   "op": "GET workspace · entrenador",
+   "status": 200,
+   "reads": 9,
+   "mutations": 0,
+   "dbBytesOut": 2066284,
+   "dbBytesIn": 8277,
+   "responseBytes": 306875,
+   "ms": 431,
+   "backendMs": 89,
+   "heapDeltaKB": 33916
+  },
+  {
+   "op": "POST asistencia · entrenador",
+   "status": 200,
+   "reads": 4,
+   "mutations": 1,
+   "dbBytesOut": 3667,
+   "dbBytesIn": 3200,
+   "responseBytes": 440,
+   "ms": 808,
+   "backendMs": 15,
+   "heapDeltaKB": 83913
+  },
+  {
+   "op": "POST resultado · entrenador",
+   "status": 400,
+   "reads": 4,
+   "mutations": 0,
+   "dbBytesOut": 5049,
+   "dbBytesIn": 1663,
+   "responseBytes": 61,
+   "ms": 56,
+   "backendMs": 31,
+   "heapDeltaKB": 3885
+  },
+  {
+   "op": "POST leer notificación · administración",
+   "status": 200,
+   "reads": 3,
+   "mutations": 1,
+   "dbBytesOut": 1822,
+   "dbBytesIn": 1954,
+   "responseBytes": 600,
+   "ms": 516,
+   "backendMs": 4,
+   "heapDeltaKB": 61215
+  },
+  {
+   "op": "POST solicitar jugadores · entrenador",
+   "status": 200,
+   "reads": 4,
+   "mutations": 1,
+   "dbBytesOut": 5269,
+   "dbBytesIn": 4178,
+   "responseBytes": 783,
+   "ms": 533,
+   "backendMs": 11,
+   "heapDeltaKB": 63210
+  },
+  {
+   "op": "POST resolver solicitud · administración",
+   "status": 200,
+   "reads": 6,
+   "mutations": 1,
+   "dbBytesOut": 17271,
+   "dbBytesIn": 5277,
+   "responseBytes": 1005,
+   "ms": 720,
+   "backendMs": 51,
+   "heapDeltaKB": 63024
+  },
+  {
+   "op": "POST publicar partido · administración",
+   "status": 200,
+   "reads": 3,
+   "mutations": 1,
+   "dbBytesOut": 2684,
+   "dbBytesIn": 2173,
+   "responseBytes": 692,
+   "ms": 593,
+   "backendMs": 22,
+   "heapDeltaKB": 60331
+  },
+  {
+   "op": "GET candidatos de subida · entrenador",
+   "status": 200,
+   "reads": 4,
+   "mutations": 0,
+   "dbBytesOut": 561232,
+   "dbBytesIn": 3116,
+   "responseBytes": 5414,
+   "ms": 218,
+   "backendMs": 101,
+   "heapDeltaKB": 30329
+  },
+  {
+   "op": "POST publicar evento · administración (sin acotar)",
+   "status": 200,
+   "reads": 143,
+   "mutations": 1,
+   "dbBytesOut": 35418559,
+   "dbBytesIn": 681201,
+   "responseBytes": 3661191,
+   "ms": 34631,
+   "backendMs": 2617,
+   "heapDeltaKB": 334377
+  }
+ ]
+}

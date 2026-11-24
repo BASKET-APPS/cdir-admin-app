@@ -1,0 +1,438 @@
+# Relational CDIR model. Changes are reviewed and deployed through Firebase CLI.
+
+type StaffFunctionRow @table(name: "staff_functions", singular: "staffFunctionRow", plural: "staffFunctions") @unique(fields: ["coachId","kind"]) {
+  id: UUID! @col(name: "id")
+  coachId: UUID! @col(name: "coachId")
+  kind: String! @col(name: "kind")
+  active: Boolean! @col(name: "active")
+  coach: Coach! @ref(fields: ["coachId"], references: ["id"])
+}
+
+type SupportSession @table(name: "support_sessions", singular: "supportSession", plural: "supportSessions") {
+  id: UUID! @col(name: "id")
+  seasonId: UUID! @col(name: "seasonId")
+  coachId: UUID! @col(name: "coachId")
+  teamId: UUID @col(name: "teamId")
+  venueId: UUID! @col(name: "venueId")
+  kind: String! @col(name: "kind")
+  title: String! @col(name: "title")
+  startsAt: Timestamp! @col(name: "startsAt")
+  endsAt: Timestamp! @col(name: "endsAt")
+  status: String! @col(name: "status")
+  season: Season! @ref(fields: ["seasonId"], references: ["id"])
+  coach: Coach! @ref(fields: ["coachId"], references: ["id"])
+  team: Team @ref(fields: ["teamId"], references: ["id"])
+  venue: Venue! @ref(fields: ["venueId"], references: ["id"])
+}
+
+type SupportParticipant @table(name: "support_participants", singular: "supportParticipant", plural: "supportParticipants") @unique(fields: ["sessionId","playerSeasonId"]) {
+  id: UUID! @col(name: "id")
+  sessionId: UUID! @col(name: "sessionId")
+  playerSeasonId: UUID! @col(name: "playerSeasonId")
+  mode: String! @col(name: "mode")
+  active: Boolean! @col(name: "active")
+  session: SupportSession! @ref(fields: ["sessionId"], references: ["id"])
+  playerSeason: PlayerSeason! @ref(fields: ["playerSeasonId"], references: ["id"])
+}
+
+type SupportAttendance @table(name: "support_attendance", singular: "supportAttendance", plural: "supportAttendanceRows") @unique(fields: ["sessionId","playerSeasonId"]) {
+  id: UUID! @col(name: "id")
+  sessionId: UUID! @col(name: "sessionId")
+  playerSeasonId: UUID! @col(name: "playerSeasonId")
+  status: String! @col(name: "status")
+  session: SupportSession! @ref(fields: ["sessionId"], references: ["id"])
+  playerSeason: PlayerSeason! @ref(fields: ["playerSeasonId"], references: ["id"])
+}
+
+type Season @table(name: "seasons", singular: "season", plural: "seasons") @unique(fields: ["name"]) {
+  id: UUID! @col(name: "id")
+  name: String! @col(name: "name")
+  startsAt: Date! @col(name: "startsAt")
+  endsAt: Date! @col(name: "endsAt")
+  status: String! @col(name: "status")
+  current: Boolean! @col(name: "current")
+}
+
+type Team @table(name: "teams", singular: "team", plural: "teams") @unique(fields: ["id","seasonId"]) @unique(fields: ["seasonId","name"]) {
+  id: UUID! @col(name: "id")
+  seasonId: UUID! @col(name: "seasonId")
+  name: String! @col(name: "name")
+  category: String! @col(name: "category")
+  modality: String! @col(name: "modality")
+  branch: String! @col(name: "branch")
+  active: Boolean! @col(name: "active")
+  season: Season! @ref(fields: ["seasonId"], references: ["id"])
+}
+
+type Player @table(name: "players", singular: "player", plural: "players") {
+  id: UUID! @col(name: "id")
+  name: String! @col(name: "name")
+  birthDate: Date @col(name: "birthDate")
+  email: String! @col(name: "email")
+  phone: String! @col(name: "phone")
+  active: Boolean! @col(name: "active")
+}
+
+type Guardian @table(name: "guardians", singular: "guardian", plural: "guardians") {
+  id: UUID! @col(name: "id")
+  name: String! @col(name: "name")
+  email: String! @col(name: "email")
+  phone: String! @col(name: "phone")
+}
+
+type PlayerSeason @table(name: "player_seasons", singular: "playerSeason", plural: "playerSeasons") @unique(fields: ["playerId","seasonId"]) @unique(fields: ["id","seasonId"]) {
+  id: UUID! @col(name: "id")
+  playerId: UUID! @col(name: "playerId")
+  seasonId: UUID! @col(name: "seasonId")
+  teamId: UUID @col(name: "teamId")
+  licenseTeamId: UUID @col(name: "licenseTeamId")
+  number: Int @col(name: "number")
+  status: String! @col(name: "status")
+  player: Player! @ref(fields: ["playerId"], references: ["id"])
+  season: Season! @ref(fields: ["seasonId"], references: ["id"])
+  team: Team @ref(fields: ["teamId","seasonId"], references: ["id","seasonId"])
+  licenseTeam: Team @ref(fields: ["licenseTeamId","seasonId"], references: ["id","seasonId"])
+}
+
+type GuardianLink @table(name: "guardian_links", singular: "guardianLink", plural: "guardianLinks") @unique(fields: ["playerId","guardianId","seasonId"]) {
+  id: UUID! @col(name: "id")
+  playerId: UUID! @col(name: "playerId")
+  guardianId: UUID! @col(name: "guardianId")
+  seasonId: UUID! @col(name: "seasonId")
+  relationship: String! @col(name: "relationship")
+  legal: Boolean! @col(name: "legal")
+  pickup: Boolean! @col(name: "pickup")
+  player: Player! @ref(fields: ["playerId"], references: ["id"])
+  guardian: Guardian! @ref(fields: ["guardianId"], references: ["id"])
+  season: Season! @ref(fields: ["seasonId"], references: ["id"])
+  playerInSeason: PlayerSeason! @ref(fields: ["playerId","seasonId"], references: ["playerId","seasonId"])
+}
+
+type Coach @table(name: "coaches", singular: "coach", plural: "coaches") {
+  id: UUID! @col(name: "id")
+  name: String! @col(name: "name")
+  email: String! @col(name: "email")
+  phone: String! @col(name: "phone")
+  qualification: String! @col(name: "qualification")
+}
+
+type CoachTeam @table(name: "coach_teams", singular: "coachTeam", plural: "coachTeams") @unique(fields: ["coachId","teamId"]) {
+  id: UUID! @col(name: "id")
+  coachId: UUID! @col(name: "coachId")
+  teamId: UUID! @col(name: "teamId")
+  seasonId: UUID! @col(name: "seasonId")
+  function: String! @col(name: "function")
+  coach: Coach! @ref(fields: ["coachId"], references: ["id"])
+  team: Team! @ref(fields: ["teamId","seasonId"], references: ["id","seasonId"])
+}
+
+type Venue @table(name: "venues", singular: "venue", plural: "venues") @unique(fields: ["name","space"]) {
+  id: UUID! @col(name: "id")
+  name: String! @col(name: "name")
+  address: String! @col(name: "address")
+  space: String! @col(name: "space")
+  active: Boolean @col(name: "active")
+}
+
+type Session @table(name: "sessions", singular: "session", plural: "sessions") @unique(fields: ["id","seasonId"]) {
+  id: UUID! @col(name: "id")
+  seasonId: UUID! @col(name: "seasonId")
+  teamId: UUID! @col(name: "teamId")
+  venueId: UUID! @col(name: "venueId")
+  startsAt: Timestamp! @col(name: "startsAt")
+  endsAt: Timestamp! @col(name: "endsAt")
+  kind: String! @col(name: "kind")
+  status: String! @col(name: "status")
+  season: Season! @ref(fields: ["seasonId"], references: ["id"])
+  venue: Venue! @ref(fields: ["venueId"], references: ["id"])
+  team: Team! @ref(fields: ["teamId","seasonId"], references: ["id","seasonId"])
+}
+
+type CrossTraining @table(name: "cross_trainings", singular: "crossTraining", plural: "crossTrainings") @unique(fields: ["playerSeasonId","destinationSessionId"]) {
+  id: UUID! @col(name: "id")
+  seasonId: UUID! @col(name: "seasonId")
+  playerSeasonId: UUID! @col(name: "playerSeasonId")
+  destinationSessionId: UUID! @col(name: "destinationSessionId")
+  sourceSessionId: UUID @col(name: "sourceSessionId")
+  reason: String! @col(name: "reason")
+  season: Season! @ref(fields: ["seasonId"], references: ["id"])
+  playerSeason: PlayerSeason! @ref(fields: ["playerSeasonId","seasonId"], references: ["id","seasonId"])
+  destinationSession: Session! @ref(fields: ["destinationSessionId","seasonId"], references: ["id","seasonId"])
+  sourceSession: Session @ref(fields: ["sourceSessionId","seasonId"], references: ["id","seasonId"])
+}
+
+type Attendance @table(name: "attendance", singular: "attendance", plural: "attendanceRows") @unique(fields: ["sessionId","playerSeasonId"]) {
+  id: UUID! @col(name: "id")
+  sessionId: UUID! @col(name: "sessionId")
+  playerSeasonId: UUID! @col(name: "playerSeasonId")
+  status: String! @col(name: "status")
+  session: Session! @ref(fields: ["sessionId"], references: ["id"])
+  playerSeason: PlayerSeason! @ref(fields: ["playerSeasonId"], references: ["id"])
+}
+
+type FormTemplate @table(name: "forms", singular: "formTemplate", plural: "forms") @unique(fields: ["name","version"]) {
+  id: UUID! @col(name: "id")
+  name: String! @col(name: "name")
+  version: Int! @col(name: "version")
+  fields: Any! @col(name: "fields")
+  active: Boolean! @col(name: "active")
+}
+
+type ClubEvent @table(name: "events", singular: "clubEvent", plural: "events") @unique(fields: ["slug"]) @unique(fields: ["id","seasonId"]) {
+  id: UUID! @col(name: "id")
+  seasonId: UUID! @col(name: "seasonId")
+  title: String! @col(name: "title")
+  slug: String! @col(name: "slug")
+  kind: String! @col(name: "kind")
+  description: String! @col(name: "description")
+  location: String! @col(name: "location")
+  startsAt: Timestamp! @col(name: "startsAt")
+  endsAt: Timestamp! @col(name: "endsAt")
+  capacity: Int! @col(name: "capacity")
+  price: Float! @col(name: "price", dataType: "numeric(12,2)")
+  status: String! @col(name: "status")
+  registrationOpen: Boolean! @col(name: "registrationOpen")
+  formId: UUID @col(name: "formId")
+  imageUrl: String! @col(name: "imageUrl")
+  season: Season! @ref(fields: ["seasonId"], references: ["id"])
+  form: FormTemplate @ref(fields: ["formId"], references: ["id"])
+}
+
+type Application @table(name: "applications", singular: "application", plural: "applications") @unique(fields: ["requestKey"]) {
+  id: UUID! @col(name: "id")
+  seasonId: UUID! @col(name: "seasonId")
+  eventId: UUID! @col(name: "eventId")
+  name: String! @col(name: "name")
+  birthDate: Date! @col(name: "birthDate")
+  email: String! @col(name: "email")
+  phone: String! @col(name: "phone")
+  status: String! @col(name: "status")
+  createdAt: Timestamp! @col(name: "createdAt")
+  requestKey: UUID! @col(name: "requestKey")
+  privacyVersion: String! @col(name: "privacyVersion")
+  privacyAccepted: Boolean! @col(name: "privacyAccepted")
+  imageConsent: Boolean! @col(name: "imageConsent")
+  answers: Any! @col(name: "answers")
+  season: Season! @ref(fields: ["seasonId"], references: ["id"])
+  event: ClubEvent! @ref(fields: ["eventId","seasonId"], references: ["id","seasonId"])
+}
+
+type Invoice @table(name: "invoices", singular: "invoice", plural: "invoices") {
+  id: UUID! @col(name: "id")
+  seasonId: UUID! @col(name: "seasonId")
+  playerSeasonId: UUID! @col(name: "playerSeasonId")
+  concept: String! @col(name: "concept")
+  amount: Float! @col(name: "amount", dataType: "numeric(12,2)")
+  dueDate: Date! @col(name: "dueDate")
+  status: String! @col(name: "status")
+  paidAt: Timestamp @col(name: "paidAt")
+  season: Season! @ref(fields: ["seasonId"], references: ["id"])
+  playerSeason: PlayerSeason! @ref(fields: ["playerSeasonId","seasonId"], references: ["id","seasonId"])
+}
+
+type BankAccount @table(name: "bank_accounts", singular: "bankAccount", plural: "bankAccounts") @unique(fields: ["playerSeasonId"]) @unique(fields: ["mandateReference"]) {
+  id: UUID! @col(name: "id")
+  playerSeasonId: UUID! @col(name: "playerSeasonId")
+  holder: String! @col(name: "holder")
+  holderDocument: String! @col(name: "holderDocument")
+  ibanEncrypted: String! @col(name: "ibanEncrypted")
+  last4: String! @col(name: "last4", dataType: "char(4)")
+  mandateReference: String! @col(name: "mandateReference")
+  mandateDate: Date! @col(name: "mandateDate")
+  playerSeason: PlayerSeason! @ref(fields: ["playerSeasonId"], references: ["id"])
+}
+
+type Content @table(name: "contents", singular: "content", plural: "contents") {
+  id: UUID! @col(name: "id")
+  kind: String! @col(name: "kind")
+  title: String! @col(name: "title")
+  body: String! @col(name: "body")
+  url: String! @col(name: "url")
+  status: String! @col(name: "status")
+  seasonId: UUID @col(name: "seasonId")
+  season: Season @ref(fields: ["seasonId"], references: ["id"])
+}
+
+type Member @table(name: "members", singular: "member", plural: "members") @unique(fields: ["uid"]) {
+  id: UUID! @col(name: "id")
+  uid: String! @col(name: "uid")
+  name: String! @col(name: "name")
+  email: String! @col(name: "email")
+  role: String! @col(name: "role")
+  teamIds: [UUID!]! @col(name: "teamIds")
+  active: Boolean! @col(name: "active")
+}
+
+type Audit @table(name: "audit_logs", singular: "audit", plural: "auditRows") {
+  id: UUID! @col(name: "id")
+  at: Timestamp! @col(name: "at")
+  actor: String! @col(name: "actor")
+  actorUid: String! @col(name: "actorUid")
+  action: String! @col(name: "action")
+  detail: String! @col(name: "detail")
+}
+
+type ClubFile @table(name: "files", singular: "clubFile", plural: "files") @unique(fields: ["storagePath"]) {
+  id: UUID! @col(name: "id")
+  ownerPlayerId: UUID! @col(name: "ownerPlayerId")
+  name: String! @col(name: "name")
+  mime: String! @col(name: "mime")
+  size: Int! @col(name: "size")
+  storagePath: String! @col(name: "storagePath")
+  createdAt: Timestamp! @col(name: "createdAt")
+  ownerPlayer: Player! @ref(fields: ["ownerPlayerId"], references: ["id"])
+}
+
+type UserProfile @table(name: "user_profiles", singular: "userProfile", plural: "profiles") @unique(fields: ["uid"]) {
+  id: UUID! @col(name: "id")
+  uid: String! @col(name: "uid")
+  googlePhotoUrl: String @col(name: "googlePhotoUrl")
+  avatarPath: String @col(name: "avatarPath")
+  avatarVersion: UUID @col(name: "avatarVersion")
+  avatarSource: String! @col(name: "avatarSource")
+  googleSyncedAt: Timestamp @col(name: "googleSyncedAt")
+  updatedAt: Timestamp! @col(name: "updatedAt")
+  member: Member! @ref(fields: ["uid"], references: ["uid"])
+}
+
+type Category @table(name: "categories", singular: "category", plural: "categories") @unique(fields: ["name"]) {
+  id: UUID! @col(name: "id")
+  name: String! @col(name: "name")
+  sortOrder: Int! @col(name: "sortOrder")
+  minAge: Int! @col(name: "minAge")
+  maxAge: Int @col(name: "maxAge")
+  scoringEnabled: Boolean! @col(name: "scoringEnabled")
+  notes: String! @col(name: "notes")
+}
+
+type TeamDetails @table(name: "team_details", singular: "teamDetails", plural: "teamDetailsRows") @unique(fields: ["teamId"]) {
+  id: UUID! @col(name: "id")
+  teamId: UUID! @col(name: "teamId")
+  categoryId: UUID! @col(name: "categoryId")
+  yearGroup: Int! @col(name: "yearGroup")
+  groupCode: String! @col(name: "groupCode")
+  division: String! @col(name: "division")
+  isExample: Boolean! @col(name: "isExample")
+  team: Team! @ref(fields: ["teamId"], references: ["id"])
+  category: Category! @ref(fields: ["categoryId"], references: ["id"])
+}
+
+type PlayerDetails @table(name: "player_details", singular: "playerDetails", plural: "playerDetailsRows") @unique(fields: ["playerId"]) {
+  id: UUID! @col(name: "id")
+  playerId: UUID! @col(name: "playerId")
+  joinedAt: Date @col(name: "joinedAt")
+  leftAt: Date @col(name: "leftAt")
+  reviewedAt: Timestamp @col(name: "reviewedAt")
+  selfResponsible: Boolean! @col(name: "selfResponsible")
+  photoUrl: String! @col(name: "photoUrl")
+  position: String! @col(name: "position")
+  source: String! @col(name: "source")
+  isExample: Boolean! @col(name: "isExample")
+  erasedAt: Timestamp @col(name: "erasedAt")
+  player: Player! @ref(fields: ["playerId"], references: ["id"])
+}
+
+type Match @table(name: "matches", singular: "match", plural: "matches") {
+  id: UUID! @col(name: "id")
+  seasonId: UUID! @col(name: "seasonId")
+  teamId: UUID! @col(name: "teamId")
+  startsAt: Timestamp! @col(name: "startsAt")
+  endsAt: Timestamp! @col(name: "endsAt")
+  opponent: String! @col(name: "opponent")
+  venue: String! @col(name: "venue")
+  location: String! @col(name: "location")
+  competition: String! @col(name: "competition")
+  status: String! @col(name: "status")
+  scoreFor: Int @col(name: "scoreFor")
+  scoreAgainst: Int @col(name: "scoreAgainst")
+  published: Boolean! @col(name: "published")
+  isExample: Boolean! @col(name: "isExample")
+  season: Season! @ref(fields: ["seasonId"], references: ["id"])
+  team: Team! @ref(fields: ["teamId","seasonId"], references: ["id","seasonId"])
+}
+
+type PlayerRequest @table(name: "player_requests", singular: "playerRequest", plural: "playerRequests") {
+  id: UUID! @col(name: "id")
+  seasonId: UUID! @col(name: "seasonId")
+  teamId: UUID! @col(name: "teamId")
+  requestedBy: String! @col(name: "requestedBy")
+  kind: String! @col(name: "kind")
+  sessionId: UUID @col(name: "sessionId")
+  matchId: UUID @col(name: "matchId")
+  neededAt: Timestamp! @col(name: "neededAt")
+  quantity: Int! @col(name: "quantity")
+  reason: String! @col(name: "reason")
+  status: String! @col(name: "status")
+  recurring: Boolean! @col(name: "recurring")
+  createdAt: Timestamp! @col(name: "createdAt")
+  resolvedAt: Timestamp @col(name: "resolvedAt")
+  decisionNote: String! @col(name: "decisionNote")
+  proposedPlayerIds: [UUID!] @col(name: "proposedPlayerIds")
+  season: Season! @ref(fields: ["seasonId"], references: ["id"])
+  session: Session @ref(fields: ["sessionId"], references: ["id"])
+  match: Match @ref(fields: ["matchId"], references: ["id"])
+  team: Team! @ref(fields: ["teamId","seasonId"], references: ["id","seasonId"])
+}
+
+type RequestPlayer @table(name: "request_players", singular: "requestPlayer", plural: "requestPlayers") @unique(fields: ["requestId","playerSeasonId"]) {
+  id: UUID! @col(name: "id")
+  requestId: UUID! @col(name: "requestId")
+  playerSeasonId: UUID! @col(name: "playerSeasonId")
+  request: PlayerRequest! @ref(fields: ["requestId"], references: ["id"])
+  playerSeason: PlayerSeason! @ref(fields: ["playerSeasonId"], references: ["id"])
+}
+
+type Notification @table(name: "notifications", singular: "notification", plural: "notifications") @unique(fields: ["dedupeKey"]) {
+  id: UUID! @col(name: "id")
+  recipientUid: String @col(name: "recipientUid")
+  adminOnly: Boolean! @col(name: "adminOnly")
+  teamId: UUID @col(name: "teamId")
+  title: String! @col(name: "title")
+  body: String! @col(name: "body")
+  href: String! @col(name: "href")
+  createdAt: Timestamp! @col(name: "createdAt")
+  readBy: [String!]! @col(name: "readBy")
+  dedupeKey: String! @col(name: "dedupeKey")
+  team: Team @ref(fields: ["teamId"], references: ["id"])
+}
+
+type Magazine @table(name: "magazines", singular: "magazine", plural: "magazines") {
+  id: UUID! @col(name: "id")
+  title: String! @col(name: "title")
+  description: String! @col(name: "description")
+  pdfPath: String! @col(name: "pdfPath")
+  publishedAt: Timestamp @col(name: "publishedAt")
+  published: Boolean! @col(name: "published")
+  isExample: Boolean! @col(name: "isExample")
+}
+
+type ClubActivity @table(name: "club_activities", singular: "clubActivity", plural: "clubActivities") {
+  id: UUID! @col(name: "id")
+  title: String! @col(name: "title")
+  description: String! @col(name: "description")
+  startsAt: Timestamp! @col(name: "startsAt")
+  location: String! @col(name: "location")
+  imageUrl: String! @col(name: "imageUrl")
+  published: Boolean! @col(name: "published")
+  isExample: Boolean! @col(name: "isExample")
+}
+
+type CoachDetails @table(name: "coach_details", singular: "coachDetails", plural: "coachDetailsRows") @unique(fields: ["coachId"]) {
+  id: UUID! @col(name: "id")
+  coachId: UUID! @col(name: "coachId")
+  photoUrl: String! @col(name: "photoUrl")
+  isExample: Boolean! @col(name: "isExample")
+  coach: Coach! @ref(fields: ["coachId"], references: ["id"])
+}
+
+type MagazineDocument @table(name: "magazine_documents") { id: UUID! magazineId: UUID! @col(name: "magazineId") magazine: Magazine! @ref(fields: ["magazineId"], references: ["id"]) payload: String! size: Int! }
+
+type MagazinePdfPart @table(name: "magazine_pdf_parts") @unique(fields: ["uploadId","ordinal"]) { id: UUID! uploadId: UUID! @col(name: "uploadId") ordinal: Int! payload: String! }
+
+type MagazineCover @table(name: "magazine_covers", singular: "magazineCover", plural: "magazineCovers") @unique(fields: ["magazineId"]) { id: UUID! magazineId: UUID! @col(name: "magazineId") magazine: Magazine! @ref(fields: ["magazineId"], references: ["id"]) payload: String! etag: String! }
+
+# Compare-and-swap revision serializes admin changes across server instances.
+type WorkspaceRevision @table(name: "workspace_revision") {
+ id: String!
+ version: Int!
+}

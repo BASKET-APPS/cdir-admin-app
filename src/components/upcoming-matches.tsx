@@ -1,0 +1,9 @@
+import RivalCrest from './rival-crest';
+import Link from 'next/link';
+import {CalendarDays,MapPin,ArrowUpRight} from 'lucide-react';
+import type {PublicState,Identity} from '@/domain/types';
+
+export default function UpcomingMatches({s,user,seasonId}:{s:PublicState;user:Identity;seasonId:string}){
+ const matches=s.matches.filter(m=>m.seasonId===seasonId&&m.status==='SCHEDULED'&&Date.parse(m.endsAt)>Date.now()&&(user.role!=='COACH'||user.teamIds.includes(m.teamId))).sort((a,b)=>a.startsAt.localeCompare(b.startsAt));
+ return <section className='panel upcoming-matches'><div className='panel-head'><div><span className='eyebrow'>TU PRÓXIMA JORNADA</span><h2>Próximos partidos</h2></div><Link href='/calendario' className='text-link'>Ver calendario<ArrowUpRight size={16}/></Link></div>{matches.length?<div className='upcoming-match-grid'>{matches.map(m=><article className='upcoming-match' key={m.id}><div className='upcoming-match-meta'><span className={'badge '+(m.venue==='HOME'?'cyan':'neutral')}>{m.venue==='HOME'?'En casa':'Fuera'}</span><span>{m.competition}</span></div><h3>{s.teams.find(t=>t.id===m.teamId)?.name||'CDIR'}</h3><p className='upcoming-opponent'><RivalCrest name={m.opponent}/>vs {m.opponent}</p><p><CalendarDays size={16}/><time dateTime={m.startsAt}>{new Intl.DateTimeFormat('es-ES',{weekday:'long',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit',timeZone:'Europe/Madrid'}).format(new Date(m.startsAt))}</time></p><p><MapPin size={16}/>{m.location}</p><Link href={'/calendario?date='+new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Madrid',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(m.startsAt))+'&view=week&team='+m.teamId} className='text-link'>Ver en calendario<ArrowUpRight size={15}/></Link></article>)}</div>:<p className='muted'>No hay próximos partidos programados para tus equipos en esta temporada.</p>}</section>;
+}

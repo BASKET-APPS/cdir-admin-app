@@ -1,0 +1,80 @@
+name: Deploy CDIR administration
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: cdir-admin-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      PROJECT_ID: cdir-apps
+      REGION: europe-southwest1
+      FIREBASE_WEB_CONFIG: ${{ vars.FIREBASE_WEB_CONFIG }}
+      PUBLIC_SITE_URL: https://basket-apps.github.io/front-cdir
+      RUNTIME_SERVICE_ACCOUNT: ${{ vars.GCP_RUNTIME_SERVICE_ACCOUNT }}
+      WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+      DEPLOY_SERVICE_ACCOUNT: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Check deployment settings
+        shell: bash
+        run: |
+          set -euo pipefail
+          for key in FIREBASE_WEB_CONFIG RUNTIME_SERVICE_ACCOUNT WIF_PROVIDER DEPLOY_SERVICE_ACCOUNT; do
+            if [ -z "${!key}" ]; then echo "Missing GitHub variable: $key"; exit 1; fi
+          done
+          test "$GITHUB_REF" = refs/heads/main
+      - run: npm ci
+      - run: npm run check
+      - name: Build before authenticating to Google
+        shell: bash
+        run: |
+          set -euo pipefail
+          IMAGE="$REGION-docker.pkg.dev/$PROJECT_ID/cdir-apps/admin:$GITHUB_SHA"
+          docker build --build-arg FIREBASE_WEB_CONFIG --build-arg PUBLIC_SITE_URL -t "$IMAGE" .
+          echo "CDIR_IMAGE=$IMAGE" >> "$GITHUB_ENV"
+      - uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v3
+      - name: Publish container
+        shell: bash
+        run: |
+          set -euo pipefail
+          gcloud auth configure-docker "$REGION-docker.pkg.dev" --quiet
+          docker push "$CDIR_IMAGE"
+      - name: Deploy the administration server
+        shell: bash
+        run: |
+          set -euo pipefail
+          gcloud run deploy cdir-admin-app --project "$PROJECT_ID" --region "$REGION" \
+            --image "$CDIR_IMAGE" --service-account "$RUNTIME_SERVICE_ACCOUNT" \
+            --port 8080 --cpu 1 --memory 2Gi --min-instances 0 --max-instances 2 \
+            --concurrency 20 --timeout 120 --cpu-throttling --allow-unauthenticated \
+            --set-env-vars "CDIR_MODE=firebase,CDIR_DATABASE=sql-connect,FIREBASE_PROJECT_ID=cdir-apps,FIREBASE_STORAGE_BUCKET=cdir-apps.firebasestorage.app,SQL_CONNECT_SERVICE_ID=cdir-apps-2-service,SQL_CONNECT_LOCATION=europe-southwest1,APP_ORIGIN=https://cdir-apps.web.app,FIREBASE_STORAGE_ENABLED=false,PUBLIC_REGISTRATION_ENABLED=false" \
+            --set-secrets "BANK_ENCRYPTION_KEY=cdir-bank-key:latest,RETENTION_JOB_SECRET=cdir-retention-job:latest" --quiet
+      - name: Publish the administration URL
+        run: npx --yes firebase-tools@15 deploy --only hosting --project cdir-apps --non-interactive
+      - name: Check public and protected endpoints
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --retry 3 https://cdir-apps.web.app/ -o /dev/null
+          curl --fail --retry 3 'https://cdir-apps.web.app/api/public/club?sections=magazines' -o /dev/null
+          code=$(curl -s -o /dev/null -w '%{http_code}' https://cdir-apps.web.app/api/workspace)
+          test "$code" = 401
+          echo 'Administration: https://cdir-apps.web.app/' >> "$GITHUB_STEP_SUMMARY"

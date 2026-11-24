@@ -1,0 +1,16 @@
+node_modules/
+.next/
+out/
+.local/
+.env*
+!.env.example
+*.tsbuildinfo
+playwright-report/
+test-results/
+
+.firebase/
+gha-creds-*.json
+*debug.log
+dataconnect/.dataconnect/
+
+.next-club-test/

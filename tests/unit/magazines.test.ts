@@ -1,0 +1,10 @@
+import {it,expect,vi,beforeEach} from 'vitest';
+const mocks=vi.hoisted(()=>({role:'ADMIN',write:vi.fn(),read:vi.fn()}));
+vi.mock('@/server/auth',()=>({identity:async()=>({uid:'test',name:'Test',role:mocks.role})}));
+vi.mock('@/server/sql-connect-store',()=>({sqlConnect:()=>({executeGraphql:mocks.write,executeGraphqlRead:mocks.read})}));
+import {POST} from '@/app/api/magazines/route';
+beforeEach(()=>{mocks.role='ADMIN';mocks.write.mockReset();mocks.read.mockReset().mockResolvedValue({data:{workspaceRevision:{version:1}}});});
+function request(bytes:Uint8Array,title='Edición de prueba'){const form=new FormData();form.set('title',title);form.set('description','Una prueba');form.set('file',new File([bytes as Uint8Array<ArrayBuffer>],'boletin.pdf',{type:'application/pdf'}));return new Request('http://127.0.0.1:3002/api/magazines',{method:'POST',headers:{origin:'http://127.0.0.1:3002'},body:form});}
+it('guarda PDF y metadatos como borrador en una transacción privada',async()=>{const r=await POST(request(new TextEncoder().encode('%PDF-1.7\nfixture')));expect(r.status).toBe(201);expect(mocks.write).toHaveBeenCalledOnce();const [query,options]=mocks.write.mock.calls[0];expect(query).toContain('@transaction');expect(query).toContain('@auth(level: NO_ACCESS)');expect(options.variables.m.published).toBe(false);expect(options.variables.d.magazineId).toBe(options.variables.m.id);expect(options.variables.d.payload).toBe(Buffer.from('%PDF-1.7\nfixture').toString('base64'));});
+it('rechaza subidas de entrenadores y archivos falsos',async()=>{mocks.role='COACH';expect((await POST(request(new TextEncoder().encode('%PDF-')))).status).toBe(403);mocks.role='ADMIN';expect((await POST(request(new TextEncoder().encode('<html>')))).status).toBe(400);expect(mocks.write).not.toHaveBeenCalled();});
+it('limita el tamaño del PDF antes de persistirlo',async()=>{const req=request(new TextEncoder().encode('%PDF-1.7'));req.headers.set('content-length',String(51*1024*1024));expect((await POST(req)).status).toBe(400);expect(mocks.write).not.toHaveBeenCalled();});

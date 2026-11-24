@@ -1,0 +1,10 @@
+export type Category={id:string;name:string;sortOrder:number;minAge:number;maxAge:number|null;scoringEnabled:boolean;notes:string};
+export type TeamDetails={id:string;teamId:string;categoryId:string;yearGroup:number;groupCode:string;division:string;isExample:boolean};
+export type PlayerDetails={id:string;playerId:string;joinedAt:string|null;leftAt:string|null;reviewedAt:string|null;selfResponsible:boolean;photoUrl:string;position:string;source:string;isExample:boolean;erasedAt:string|null};
+export type Match={id:string;seasonId:string;teamId:string;startsAt:string;endsAt:string;opponent:string;venue:'HOME'|'AWAY';location:string;competition:string;status:'SCHEDULED'|'FINAL'|'CANCELLED';scoreFor:number|null;scoreAgainst:number|null;published:boolean;isExample:boolean};
+export type PlayerRequest={proposedPlayerIds?:string[]|null;id:string;seasonId:string;teamId:string;requestedBy:string;kind:'TRAINING'|'MATCH';sessionId:string|null;matchId:string|null;neededAt:string;quantity:number;reason:string;status:'PENDING'|'APPROVED'|'REJECTED';recurring:boolean;createdAt:string;resolvedAt:string|null;decisionNote:string};
+export type RequestPlayer={id:string;requestId:string;playerSeasonId:string};
+export type Notification={id:string;recipientUid:string|null;adminOnly:boolean;teamId:string|null;title:string;body:string;href:string;createdAt:string;readBy:string[];dedupeKey:string};
+export type Magazine={id:string;title:string;description:string;pdfPath:string;publishedAt:string|null;published:boolean;isExample:boolean};
+export type ClubActivity={id:string;title:string;description:string;startsAt:string;location:string;imageUrl:string;published:boolean;isExample:boolean};
+export type CoachDetails={id:string;coachId:string;photoUrl:string;isExample:boolean};

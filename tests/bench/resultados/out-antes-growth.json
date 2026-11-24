@@ -1,0 +1,53 @@
+{
+ "scale": "growth",
+ "results": [
+  {
+   "op": "GET workspace · administración",
+   "status": 200,
+   "reads": 285,
+   "mutations": 1,
+   "dbBytesOut": 70272311,
+   "dbBytesIn": 1363004,
+   "responseBytes": 34755514,
+   "ms": 317335,
+   "backendMs": 255291,
+   "heapDeltaKB": 303367
+  },
+  {
+   "op": "GET workspace · entrenador",
+   "status": 200,
+   "reads": 143,
+   "mutations": 0,
+   "dbBytesOut": 34865241,
+   "dbBytesIn": 679104,
+   "responseBytes": 1934130,
+   "ms": 28210,
+   "backendMs": 1422,
+   "heapDeltaKB": 295466
+  },
+  {
+   "op": "POST asistencia · entrenador",
+   "status": 200,
+   "reads": 143,
+   "mutations": 1,
+   "dbBytesOut": 35416663,
+   "dbBytesIn": 681427,
+   "responseBytes": 1933688,
+   "ms": 238873,
+   "backendMs": 211121,
+   "heapDeltaKB": 202266
+  },
+  {
+   "op": "POST resultado · entrenador",
+   "status": 400,
+   "reads": 143,
+   "mutations": 0,
+   "dbBytesOut": 35416828,
+   "dbBytesIn": 680644,
+   "responseBytes": 61,
+   "ms": 30009,
+   "backendMs": 1374,
+   "heapDeltaKB": 285547
+  }
+ ]
+}

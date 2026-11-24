@@ -1,0 +1,23 @@
+name: Weekly review reminders
+on:
+  schedule:
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request review reminders from the club server
+        env:
+          CDIR_ADMIN_URL: ${{ vars.CDIR_ADMIN_URL }}
+          RETENTION_JOB_SECRET: ${{ secrets.RETENTION_JOB_SECRET }}
+        run: |
+          if [ -z "$CDIR_ADMIN_URL" ] || [ -z "$RETENTION_JOB_SECRET" ]; then
+            echo "Configure CDIR_ADMIN_URL and RETENTION_JOB_SECRET after deploying the administration server."
+            exit 0
+          fi
+          curl --fail --silent --show-error --max-time 120 \
+            -X POST -H "Authorization: Bearer $RETENTION_JOB_SECRET" \
+            "${CDIR_ADMIN_URL%/}/api/jobs/retention"

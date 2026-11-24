@@ -1,0 +1,12 @@
+import {it,expect,vi,beforeEach,afterEach} from 'vitest';
+import sharp from 'sharp';
+import {demoState} from '@/domain/seed';
+import {ensureCoach} from '@/domain/people';
+const mock=vi.hoisted(()=>({state:null as unknown as ReturnType<typeof demoState>}));
+vi.mock('@/server/auth',()=>({identity:async()=>mock.state.members[0]}));
+vi.mock('@/server/store',()=>({readState:async()=>mock.state,readOwnAvatarState:async()=>mock.state,readCoachAvatarState:async()=>mock.state,transaction:async(fn:(s:ReturnType<typeof demoState>)=>unknown)=>fn(mock.state)}));
+import {POST,GET,DELETE} from '@/app/api/profile/avatar/route';
+import {GET as coachGet} from '@/app/api/coaches/[id]/avatar/route';
+beforeEach(()=>{mock.state=demoState();vi.stubEnv('CDIR_DATABASE','sql-connect');vi.stubEnv('APP_ORIGIN','http://127.0.0.1:3002');});
+afterEach(()=>vi.unstubAllEnvs());
+it('guarda la foto normalizada en SQL sin Storage y permite leerla como propietario o técnico autorizado',async()=>{const c=ensureCoach(mock.state,mock.state.members[0])!;const bytes=await sharp({create:{width:20,height:20,channels:3,background:'#00bcd4'}}).png().toBuffer();const form=new FormData();form.set('file',new File([new Uint8Array(bytes)],'foto.png',{type:'image/png'}));const result=await POST(new Request('http://127.0.0.1:3002/api/profile/avatar',{method:'POST',headers:{origin:'http://127.0.0.1:3002'},body:form}));expect(result.status).toBe(200);const json=await result.json();expect(JSON.stringify(json)).not.toContain('base64');const profile=mock.state.profiles[0];expect(profile.avatarPath).toMatch(/^data:image\/webp;base64,/);const own=await GET(new Request('http://127.0.0.1:3002'+json.user.avatarUrl));expect(own.status).toBe(200);expect((await sharp(Buffer.from(await own.arrayBuffer())).metadata()).width).toBe(320);const url=`http://127.0.0.1:3002/api/coaches/${c.id}/avatar?v=${profile.avatarVersion}`;expect((await coachGet(new Request(url),{params:Promise.resolve({id:c.id})})).status).toBe(200);mock.state.members[0].role='COACH';mock.state.members[0].teamIds=[];expect((await coachGet(new Request(url),{params:Promise.resolve({id:c.id})})).status).toBe(403);mock.state.members[0].role='ADMIN';const removed=await DELETE(new Request('http://127.0.0.1:3002/api/profile/avatar',{method:'DELETE',headers:{origin:'http://127.0.0.1:3002'}}));expect(removed.status).toBe(200);expect(mock.state.profiles[0].avatarPath).toBeNull();expect((await GET(new Request('http://127.0.0.1:3002'+json.user.avatarUrl))).status).toBe(404);});
